@@ -8,7 +8,7 @@ require_once('library.php');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>HWF</title>
     <style>
         html,
         body {
@@ -82,12 +82,15 @@ require_once('library.php');
                     <p></p>
                     <button class="btn btn-lg btn-primary btn-block">登入</button>
                     <hr>
+                    <p></p>
+                    <span> 有事找我, yingrong.chang@gmail.com </span>
+                    
                 </form>
             </div>
-            <div class="col-12 text-center">
-                <span> 沒有帳號? </span>
-                <a class="btn btn-primary" href="register.php">註冊</a>
-            </div>
+            <!-- <div class="col-12 text-center"> -->
+                
+                <!-- <a class="btn btn-primary" href="register.php">註冊</a> -->
+            <!-- </div> -->
         </div>
     </div>
 </body>

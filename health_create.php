@@ -1,6 +1,7 @@
 <?php
 require_once('library.php');
 include(_includes_ . '/navbar.php');
+if(!isset($_SESSION['user'])) header('Location:login.php');
 ?>
 <!DOCTYPE html>
 
@@ -47,7 +48,7 @@ include(_includes_ . '/navbar.php');
                     </div>
                     <div class="col-12 col-md-3">
                         <div class="form-group">
-                            <label for="exampleInputEmail1">體指</label>
+                            <label for="exampleInputEmail1">體脂</label>
                             <input type="text" class="form-control" id='fat' name='fat'>
                         </div>
                     </div>

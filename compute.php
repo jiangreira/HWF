@@ -1,5 +1,12 @@
 <?php
-require_once('library.php');
+session_start();
+$db = new PDO("mysql:host=localhost;dbname=s1080407;charset=utf8", "s1080407", "s1080407");
+function jlo($link)
+{
+    return "location.href='" . $link . "'";
+    //外面要自己加上<script>
+}
+
 switch ($_GET['do']) {
     case 'login':
         $id = $_POST['id'];
@@ -13,7 +20,7 @@ switch ($_GET['do']) {
             if ($inputpasswod == $hashedPassword) {
                 $_SESSION['username'] = $rows[0]['name'];
                 $_SESSION['user'] = $rows[0]['id'];
-                echo "<script>alert('登入成功');" . jlo("health_create.php") . "</script>";
+                echo "<script>alert('登入成功');" . jlo("health_list.php") . "</script>";
             } else {
                 echo "<script>alert('密碼錯誤');" . jlo("login.php") . "</script>";
             }
@@ -43,7 +50,109 @@ switch ($_GET['do']) {
         $fat = (isset($_POST['fat'])) ? $_POST['fat'] : 0;
         $date = (isset($_POST['date'])) ? $_POST['date'] : date('Y-m-d');
         $ampm = (isset($_POST['time'])) ? $_POST['time'] : 'morning';
-        $sql='INSERT INTO hwf_dataset VALUES(null,"' . $userid . '","' . $kg . '","' . $fat . '","'.$date.'","'.$ampm.'",NOW(),NOW())';
-        print_r($sql);
+        $sql = 'INSERT INTO hwf_dataset VALUES(null,"' . $userid . '","' . $kg . '","' . $fat . '","' . $date . '","' . $ampm . '",NOW(),NOW())';
+        if ($db->query($sql)) {
+            return header('Location:health_list.php');
+        };
+        break;
+    case 'list7ds':
+        $userid = $_SESSION['user'];
+        $today = date('Y-m-d');
+        $yesterday = date("Y-m-d", strtotime($today . "-6 day"));
+        $sql = 'SELECT * FROM hwf_dataset WHERE date >= "' . $yesterday . '" AND date <= "' . $today . '" AND userid="' . $userid . '" ORDER BY date desc,ampm asc';
+        $rows = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        if (!$rows) echo 'no';
+        $data = array();
+        $findheight = $db->query('SELECT height FROM hwf_userinfo WHERE id=' . $userid)->fetch(PDO::FETCH_ASSOC);
+        $height = $findheight['height'];
+        foreach ($rows as $key => $row) {
+            $data[] = array(
+                'id' => $row['id'],
+                'kg' => $row['kg'],
+                'fat' => $row['fat'],
+                'date' => $row['date'],
+                'ampm' => $row['ampm'],
+                'bmi' => round(($row['kg'] / ($height * $height)) * 10000, 2)
+            );
+        }
+        $newdata = json_encode($data);
+        echo $newdata;
+        break;
+    case 'deldataset':
+        $id = $_POST['id'];
+        $sql = 'DELETE FROM hwf_dataset WHERE id=' . $id;
+        $rows = $db->query($sql);
+        if ($rows) {
+            echo 'OK';
+        } else {
+            echo 'Fail';
+        }
+        break;
+
+
+    case 'listsearch':
+        $userid = $_SESSION['user'];
+        $startdate = $_POST['startdate'];
+        $enddate = $_POST['enddate'];
+        $sql = 'SELECT * FROM hwf_dataset WHERE date >= "' . $startdate . '" AND date <= "' . $enddate . '" AND userid="' . $userid . '" ORDER BY date desc,ampm asc';
+        $rows = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        if (!$rows) echo 'no';
+        $findheight = $db->query('SELECT height FROM hwf_userinfo WHERE id=' . $userid)->fetch(PDO::FETCH_ASSOC);
+        $height = $findheight['height'];
+        $data = array();
+        foreach ($rows as $key => $row) {
+            $data[] = array(
+                'id' => $row['id'],
+                'user' => $row['userid'],
+                'kg' => $row['kg'],
+                'fat' => $row['fat'],
+                'date' => $row['date'],
+                'ampm' => $row['ampm'],
+                'bmi' => round(($row['kg'] / ($height * $height)) * 10000, 2)
+            );
+        }
+        $newdata = json_encode($data);
+        echo $newdata;
+        break;
+    case 'basicedit':
+        $id = $_SESSION['user'];
+        if ($id) {
+            $isexist = $db->query('SELECT * FROM hwf_userinfo WHERE id=' . $id)->fetchAll(PDO::FETCH_ASSOC);
+            $height = isset($_POST['height']) ? $_POST['height'] : 1;
+            $kg = isset($_POST['kg']) ? $_POST['kg'] : 1;
+            $fat = isset($_POST['fat']) ? $_POST['fat'] : 1;
+            if (!$isexist) {
+                $db->query('INSERT INTO hwf_userinfo(id,updatetime) VALUES("' . $id . '",NOW())');
+            }
+            if (!empty($height)) {
+                $db->query('UPDATE hwf_userinfo SET height=' . $height . ',updatetime=NOW() WHERE id=' . $id);
+            }
+            if (!empty($kg)) {
+                $db->query('UPDATE hwf_userinfo SET kg=' . $kg . ',updatetime=NOW() WHERE id=' . $id);
+            }
+            if (!empty($fat)) {
+                $db->query('UPDATE hwf_userinfo SET fat=' . $fat . ',updatetime=NOW() WHERE id=' . $id);
+            }
+            $arr['msg'] = 'OK';
+        } else {
+            $arr['msg'] = 'err';
+        }
+        echo json_encode($arr);
+        break;
+    case 'basicshow':
+        $id = $_SESSION['user'];
+        if ($id) {
+            $arr = $db->query('SELECT * FROM hwf_userinfo WHERE id=' . $id)->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            $arr['msg'] = 'err';
+        }
+        echo json_encode($arr);
+
+        break;
+    case '':
+        break;
+    case '':
+        break;
+    case '':
         break;
 }

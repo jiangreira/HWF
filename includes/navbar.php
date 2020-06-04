@@ -1,12 +1,15 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-info">
-  <a class="navbar-brand" href="#">HealthWithFriends</a>
+  <a class="navbar-brand" href="health_list.php">HealthWithFriends</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navbarNavDropdown">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active">
-        <a class="nav-link" href="health_list.php""> 近一週紀錄 <span class="sr-only">(current)</span></a>
+        <a class="nav-link" href="health_list.php"> 近一週紀錄 <span class=" sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="member.php">基本資訊</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="health_create.php">新增紀錄</a>

@@ -142,6 +142,7 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
         //今天
         var currentDate = `${today.getFullYear()}-${((today.getMonth() + 1 ) <10)?0:''}${(today.getMonth() + 1)}-${((today.getDate()) <10)?0:''}${today.getDate()}`;
         $('#enddate').val(currentDate);
+        $('#date').val(currentDate);
 
         var firstdate = `${today.getFullYear()}-${((today.getMonth() + 1 ) <10)?0:''}${(today.getMonth() + 1)}-01`;
         $('#startdate').val(firstdate);
@@ -170,7 +171,6 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                             `;
                         }
                         $('tbody').html(print);
-                        console.log(newre);
                     }
                 }
             });

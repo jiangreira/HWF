@@ -1,10 +1,22 @@
 <?php
 session_start();
-$db = new PDO("mysql:host=localhost;dbname=s1080407;charset=utf8", "s1080407", "s1080407");
+$db = new PDO("mysql:host=localhost;dbname=s1080407;charset=utf8", "root", "");
 function jlo($link)
 {
     return "location.href='" . $link . "'";
     //外面要自己加上<script>
+}
+function getword($num)
+{
+    $length = $num;
+    $password = '';
+    $word = 'abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ23456789';
+    $str = strlen($word);
+
+    for ($i = 0; $i < $length; $i++) {
+        $password .= $word[rand() % $str];
+    }
+    return $password;
 }
 
 switch ($_GET['do']) {
@@ -142,16 +154,62 @@ switch ($_GET['do']) {
     case 'basicshow':
         $id = $_SESSION['user'];
         if ($id) {
-            $arr = $db->query('SELECT * FROM hwf_userinfo WHERE id=' . $id)->fetchAll(PDO::FETCH_ASSOC);
+            $result = $db->query('SELECT * FROM hwf_userinfo WHERE id=' . $id)->fetchAll(PDO::FETCH_ASSOC);
+            if (count($result) > 0) {
+                $arr['msg'] = 'OK';
+                $arr['data'] = $result;
+            } else {
+                $arr['msg'] = 'nodata';
+            }
         } else {
             $arr['msg'] = 'err';
         }
         echo json_encode($arr);
-
         break;
-    case '':
+    case 'getFriendCode':
+        $chkuserinfo = $db->query('SELECT * FROM hwf_userinfo WHERE id=' . $_SESSION['user'])->fetchAll(PDO::FETCH_ASSOC);
+        $chkisexist = $db->query('SELECT friend_code FROM hwf_userinfo WHERE id=' . $_SESSION['user'])->fetchAll(PDO::FETCH_ASSOC);
+        if (count($chkisexist) != 0 && !empty($chkisexist)) {
+            $arr['msg'] = 'err';
+            $arr['txt'] = '代碼已存在';
+        } else {
+            if (!$chkuserinfo) {
+                $db->query('INSERT INTO hwf_userinfo(id,updatetime) VALUES("' . $_SESSION['user'] . '",NOW())');
+            }
+            $code = '';
+            for ($i = 0; $i < 10; $i++) {
+                $code = getword(6);
+                $rows = $db->query('SELECT *FROM hwf_userinfo WHERE friend_code="' . $code . '"')->fetchAll(PDO::FETCH_ASSOC);
+                if (!$rows) {
+                    $arr['FriendCode'] = $code;
+                }
+            }
+            $rows1 = $db->query('UPDATE hwf_userinfo SET friend_code ="' . $code . '",updatetime=NOW() WHERE id=' . $_SESSION['user']);
+            if ($rows1) {
+                $arr['msg'] = 'OK';
+            } else {
+                $arr['msg'] = 'err';
+                $arr['txt'] = '新增失敗';
+            }
+        }
+        echo json_encode($arr);
         break;
-    case '':
+    case 'searchFriend':
+        $code = $_POST['code'];
+        $chkcode = $db->query('SELECT *FROM hwf_userinfo WHERE friend_code="' . $code . '" AND id=' . $_SESSION['user'])->fetchAll(PDO::FETCH_ASSOC);
+        if (count($chkcode) == 0) {
+            $finduser = $db->query('SELECT hwf_user.id,hwf_user.name FROM hwf_user JOIN hwf_userinfo ON hwf_user.id=hwf_userinfo.id WHERE friend_code="' . $code . '"')->fetchall(PDO::FETCH_ASSOC);
+            if (count($finduser) == 0) {
+                $arr['msg'] = 'nodata';
+            } else {
+                $arr['msg'] = 'OK';
+                $arr['data'] = $finduser;
+            }
+        } else {
+            $arr['msg'] = 'err';
+            $arr['txt'] = '不得輸入自己代碼';
+        }
+        echo json_encode($arr);
         break;
     case '':
         break;

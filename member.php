@@ -24,8 +24,9 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
             <nav>
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
                     <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">初始訊息</a>
-                    <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">好友++</a>
-                    <a class="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Contact</a>
+                    <a class="nav-item nav-link" id="find_friend-tab" data-toggle="tab" href="#find_friend" role="tab" aria-controls="find_friend" aria-selected="false">尋找好友</a>
+                    <a class="nav-item nav-link" id="firend_list-tab" data-toggle="tab" href="#firend_list" role="tab" aria-controls="firend_list" aria-selected="false">好友列表</a>
+                    <a class="nav-item nav-link" id="freind_request-tab" data-toggle="tab" href="#freind_request" role="tab" aria-controls="freind_request" aria-selected="false">申請</a>
                 </div>
             </nav>
             <div class="tab-content" id="nav-tabContent">
@@ -44,7 +45,7 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                     </div>
                     <button onclick='basicedit()' class="btn btn-danger mt-3 float-right"><span class="material-icons">save</span></button>
                 </div>
-                <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                <div class="tab-pane fade" id="find_friend" role="tabpanel" aria-labelledby="find_friend-tab">
                     <div class="form-group mt-3">
                         <label for="firend_code">我的好友++代碼</label>
                         <input type="text" class="form-control" id="firend_code" disabled>
@@ -67,11 +68,37 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                     </table>
                     <hr>
                 </div>
-                <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">...</div>
+                <div class="tab-pane fade" id="firend_list" role="tabpanel" aria-labelledby="firend_list-tab">...</div>
+                <div class="tab-pane fade" id="freind_request" role="tabpanel" aria-labelledby="freind_request-tab">...</div>
             </div>
         </div>
     </div>
-    <!-- Button trigger modal -->
+    <div class="modal fade" id="forsearch" tabindex="-1" role="dialog" aria-labelledby="forsearch" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">搜尋結果</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class='table searchfriend-table table-hover'>
+                        <thead class='thead-light '>
+                            <tr>
+                                <th>姓名</th>
+                                <th>發送邀請</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         var clipboard = new ClipboardJS('.copycode', {
@@ -83,7 +110,7 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
         clipboard.on('success', function(e) {
             alert('Copied!');
         });
-        var arr1;
+
         var infoshow = function() {
             $.ajax({
                 type: "POST",
@@ -91,7 +118,6 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                 data: '',
                 success: function(re) {
                     var arr = JSON.parse(re);
-                    arr1 = arr
                     if (arr.msg == 'nodata') {
                         $('#height').val('0');
                         $('#fat').val('0');
@@ -118,8 +144,6 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                             $('#getFriendCode').attr('disabled', 'disabled');
                         }
                     }
-
-
                 }
             });
         }
@@ -179,18 +203,41 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                 },
                 success: function(re) {
                     var arr = JSON.parse(re);
-                    console.log(arr.data.length);
                     var i = 0;
-                    var print = '<tr><th>姓名</th><th>++</th></tr>';
+                    var print = '';
                     for (i; i < arr.data.length; i++) {
-                        print += `<tr><th>${arr.date[i].name}</th><th></th></tr>`;
+                        print += `<tr><th>${arr.data[i].name}<input type="hidden" name="friendsid" value='${arr.data[i].id}'></th><th><button class='btn btn-sm btn-danger'onclick='sendrequest(this)'><span class="material-icons">send</span></button> \t <span></span></th></tr>`;
                     }
-                    $('table').html(print);
-
+                    $('.searchfriend-table tbody').html(print);
+                    $('#forsearch').modal('show')
                 }
             });
         })
+
+        function sendrequest(who) {
+            arr2 = who
+            var requestid = $(who).parents('tr').find('input[name=friendsid]').val()
+            $.ajax({
+                type: "POST",
+                url: 'compute.php?do=sendFriendRequest',
+                data: {
+                    requestid
+                },
+                success: function(re) {
+                    var arr = JSON.parse(re);
+                    if (arr['msg'] == 'OK') {
+                        $(who).attr('disabled', 'disabled');
+                    } else if (arr['msg'] == 'requestfail') {
+                        $(who).siblings('span').text(`Oops!`)
+                    } else {
+                        $(who).siblings('span').text(`${arr['txt']}`)
+                        $(who).attr('disabled', 'disabled');
+                    }
+                }
+            });
+        }
     </script>
+
 </body>
 
 </html>

@@ -211,6 +211,27 @@ switch ($_GET['do']) {
         }
         echo json_encode($arr);
         break;
+    case 'sendFriendRequest':
+        $requestToid = $_POST['requestid'];
+        $chkisexist = $db->query('SELECT * FROM hwf_friends_request WHERE userid=' . $_SESSION['user'] . ' AND friendsid=' . $requestToid)->fetchAll(PDO::FETCH_ASSOC);
+        if (empty($chkisexist)) { //沒有申請過紀錄
+            $authstatus = 'Pending';
+            $sql = 'INSERT INTO hwf_friends_request values(null,' . $_SESSION['user'] . ',' . $requestToid . ',"' . $authstatus . '",NOW())';
+            if ($db->query($sql)) {
+                $arr['msg'] = 'OK';
+            } else {
+                $arr['msg'] = 'requestfail';
+            }
+        } else { //已存在申請紀錄
+            $arr['msg'] = 'isexist';
+            $arr['txt'] = $chkisexist[0]['isauth'];
+        }
+        echo json_encode($arr);
+        break;
+    case '':
+        break;
+    case '':
+        break;
     case '':
         break;
 }

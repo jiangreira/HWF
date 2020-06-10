@@ -154,10 +154,35 @@ switch ($_GET['do']) {
     case 'basicshow':
         $id = $_SESSION['user'];
         if ($id) {
-            $result = $db->query('SELECT * FROM hwf_userinfo WHERE id=' . $id)->fetchAll(PDO::FETCH_ASSOC);
-            if (count($result) > 0) {
-                $arr['msg'] = 'OK';
-                $arr['data'] = $result;
+            // 找別人向我申請紀錄
+            // SELECT hwf_user.id,hwf_user.name FROM hwf_user JOIN hwf_friends_request ON hwf_friends_request.userid=hwf_user.id WHERE hwf_friends_request.friendsid=2
+            $find_friendsreq_res = $db->query('SELECT hwf_user.id,hwf_user.name FROM hwf_user JOIN hwf_friends_request ON hwf_friends_request.userid=hwf_user.id WHERE isauth="Pending" AND hwf_friends_request.friendsid=' . $id)->fetchAll(PDO::FETCH_ASSOC);
+            if (count($find_friendsreq_res) > 0) {
+                $arr['find_friendsreq']['msg'] = 'OK';
+                foreach ($find_friendsreq_res as $value) {
+                    $find_friendsreq[] = array('requestid' => $value['id'], 'requestname' => $value['name']);
+                }
+                $arr['find_friendsreq']['data'] = $find_friendsreq;
+            } else {
+                $arr['find_friendsreq']['msg'] = 'nodata';
+            }
+            // 找我方申請的紀錄
+            // SELECT hwf_user.id,hwf_user.name FROM hwf_user JOIN hwf_friends_request ON hwf_friends_request.friendsid=hwf_user.id WHERE userid=2
+            $friendsend_res = $db->query('SELECT hwf_user.id,hwf_user.name FROM hwf_user JOIN hwf_friends_request ON hwf_friends_request.friendsid=hwf_user.id WHERE isauth="Pending" AND userid=' . $id)->fetchAll(PDO::FETCH_ASSOC);
+            if (count($friendsend_res) > 0) {
+                $arr['friendsend']['msg'] = 'OK';
+                foreach ($friendsend_res as $value) {
+                    $friendsend[] = array('requestToid' => $value['id'], 'requestname' => $value['name']);
+                }
+                $arr['friendsend']['data'] = $friendsend;
+            } else {
+                $arr['friendsend']['msg'] = 'nodata';
+            }
+            // 基本資訊
+            $basicinfo = $db->query('SELECT * FROM hwf_userinfo WHERE id=' . $id)->fetchAll(PDO::FETCH_ASSOC);
+            if (count($basicinfo) > 0) {
+                $arr['basicinfo']['msg'] = 'OK';
+                $arr['basicinfo']['data'] = $basicinfo;
             } else {
                 $arr['msg'] = 'nodata';
             }
@@ -227,6 +252,67 @@ switch ($_GET['do']) {
             $arr['txt'] = $chkisexist[0]['isauth'];
         }
         echo json_encode($arr);
+        break;
+    case 'delfriendsend':
+        $delid = $_POST['delid'];
+        $sql = 'DELETE FROM hwf_friends_request WHERE friendsid=' . $delid . ' AND isauth="Pending" AND userid=' . $_SESSION['user'];
+        $ssql = 'SELECT * FROM hwf_friends_request WHERE friendsid=' . $delid . ' AND isauth="Pending" AND userid=' . $_SESSION['user'];
+        $chkisexist = $db->query($ssql)->fetchAll(PDO::FETCH_ASSOC);
+        if (!empty($chkisexist)) {
+            if ($db->query($sql)) {
+                $arr['msg'] = 'OK';
+            } else {
+                $arr['msg'] = 'err';
+                $arr['txt'] = '刪除失敗';
+            }
+        } else {
+            $arr['msg'] = 'err';
+            $arr['txt'] = '不存在的申請或是已通過對方申請';
+        }
+        echo json_encode($arr);
+        break;
+    case 'agreequest':
+        $agreeid = $_POST['agreeid'];
+        $authstatus = 'Friends';
+        // 確認我有沒有加對方 有的話也一起修改 並一起增加好友
+        $sql = 'SELECT * FROM hwf_friends_request WHERE userid=' . $_SESSION['user'] . ' AND friendsid=' . $agreeid;
+        $chkother = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        if (!empty($chkother)) {
+            $bothupdate = 1; //我也有加對方
+            $usql = 'UPDATE hwf_friends_request SET updatetime=NOW(),isauth="' . $authstatus . '" AND userid=' . $_SESSION['user'] . ' AND friendsid=' . $agreeid;
+            $usqlstatus = ($db->query($usql)) ? 1 : 0;
+        } else {
+            $bothupdate = 0;
+        }
+        $fsql = 'UPDATE hwf_friends_request SET updatetime=NOW(),isauth="' . $authstatus . '" AND userid=' . $agreeid . ' AND friendsid=' . $_SESSION['user'];
+        if (($bothupdate == 0) || (($bothupdate == 1) && ($usqlstatus == 1))) {
+            if ($db->query($fsql)) {
+            }
+        } else {
+            $arr['msg'] = 'err';
+            $arr['txt'] = '未知錯誤';
+        }
+        // 修改對方+我
+
+
+        break;
+    case 'denyquest':
+        $denyid = $_POST['denyid'];
+        $authstatus = 'Pending';
+        $updatesql = 'DELETE FROM hwf_friends_request WHERE isauth="' . $authstatus . '" AND userid=' . $denyid . ' AND friendsid=' . $_SESSION['user'];
+        if ($db->query($updatesql)) {
+            $arr['msg'] = 'OK';
+        } else {
+            $arr['msg'] = 'err';
+            $arr['txt'] = '修改失敗';
+        }
+        echo json_encode($arr);
+        break;
+    case '':
+        break;
+    case '':
+        break;
+    case '':
         break;
     case '':
         break;

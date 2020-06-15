@@ -1,4 +1,5 @@
 <?php
+$thispage = 'health_list';
 require_once('library.php');
 include(_includes_ . '/navbar.php');
 if (!isset($_SESSION['user'])) header('Location:login.php');
@@ -30,7 +31,6 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
             -webkit-transition: 0.5s;
             -o-transition: 0.5s;
             transition: 0.5s;
-            backgorund: green;
         }
 
         .addbutton a span {
@@ -135,7 +135,6 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
             </div>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
     <script>
         var today = new Date();
@@ -146,7 +145,8 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
 
         var firstdate = `${today.getFullYear()}-${((today.getMonth() + 1 ) <10)?0:''}${(today.getMonth() + 1)}-01`;
         $('#startdate').val(firstdate);
-        var list_ajax = function() {
+
+        function list_ajax() {
             $.ajax({
                 type: "GET",
                 url: 'compute.php?do=list7ds',
@@ -154,7 +154,7 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                 success: function(re) {
                     if (re) {
                         var newre = JSON.parse(re);
-                        var print = '';
+                        var print = ''; 
                         for (i = 0; i < newre.length; i++) {
                             print += `
                             <tr>
@@ -180,23 +180,19 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
         function listsearch() {
             var startdate = $('#startdate').val();
             var enddate = $('#enddate').val();
-
-            if (startdate == firstdate && enddate == currentDate) {
-                list_ajax();
-            } else {
-                $.ajax({
-                    type: "POST",
-                    url: 'compute.php?do=listsearch',
-                    data: {
-                        startdate,
-                        enddate
-                    },
-                    success: function(re) {
-                        if (re) {
-                            var newre = JSON.parse(re);
-                            var print = '';
-                            for (i = 0; i < newre.length; i++) {
-                                print += `
+            $.ajax({
+                type: "POST",
+                url: 'compute.php?do=listsearch',
+                data: {
+                    startdate,
+                    enddate
+                },
+                success: function(re) {
+                    if (re) {
+                        var newre = JSON.parse(re);
+                        var print = '';
+                        for (i = 0; i < newre.length; i++) {
+                            print += `
                             <tr>
                                 <td>
                                     <button class='btn btn-sm btn-warning text-light' onclick='update()'><span class="material-icons">create</span></button>
@@ -209,36 +205,30 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                                 <td>${newre[i].bmi}</td>
                             </tr>
                             `;
+                        }
+                        $('tbody').html(print);
+                    }
+                }
+            });
+
+            function del(who) {
+                var id = $(who).parent().find('input[name=datasetid]').val();
+                var chkdel = confirm("確定刪除?");
+                var this_tr = $(who).parents('tr');
+                if (chkdel == true) {
+                    $.ajax({
+                        type: "POST",
+                        url: 'compute.php?do=deldataset',
+                        data: {
+                            id
+                        },
+                        success: function(re) {
+                            if (re == 'OK') {
+                                $(this_tr).remove();
                             }
-                            $('tbody').html(print);
                         }
-                    }
-                });
-            }
-            // if (!empty(startdate) && !empty(enddate)) {
-
-            // }
-        }
-
-
-
-        function del(who) {
-            var id = $(who).parent().find('input[name=datasetid]').val();
-            var chkdel = confirm("確定刪除?");
-            var this_tr = $(who).parents('tr');
-            if (chkdel == true) {
-                $.ajax({
-                    type: "POST",
-                    url: 'compute.php?do=deldataset',
-                    data: {
-                        id
-                    },
-                    success: function(re) {
-                        if (re == 'OK') {
-                            $(this_tr).remove();
-                        }
-                    }
-                });
+                    });
+                }
             }
         }
     </script>

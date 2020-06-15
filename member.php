@@ -1,4 +1,5 @@
 <?php
+$thispage = 'member';
 require_once('library.php');
 include(_includes_ . '/navbar.php');
 if (!isset($_SESSION['user'])) header('Location:login.php');
@@ -18,7 +19,7 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
 <body>
     <div class="container-fluid ">
         <div class="container mt-3 position-relative">
-            <h4 class="mt-3 mb-3">資料維護及設定(維修中)</h4>
+            <h4 class="mt-3 mb-3">資料維護及設定</h4>
         </div>
         <div class="container">
             <nav>
@@ -71,16 +72,28 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                     <hr>
                 </div>
                 <!-- 好友列表 -->
-                <div class="tab-pane fade" id="firend_list" role="tabpanel" aria-labelledby="firend_list-tab">...</div>
+                <div class="tab-pane fade" id="firend_list" role="tabpanel" aria-labelledby="firend_list-tab">
+                    <table class='table myfriends-table'>
+                        <thead class='thead-light'>
+                            <tr class='text-center'>
+                                <th>#</th>
+                                <th>姓名</th>
+                                <th>功能</thclass=>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <hr>
+                </div>
                 <!-- 申請紀錄 -->
                 <div class="tab-pane fade" id="freind_request" role="tabpanel" aria-labelledby="freind_request-tab">
                     <div class="form-group mt-3">
                         <label>好友申請:</label>
                         <table class='table friendsrequest-table '>
                             <thead class='thead-light '>
-                                <tr class='d-flex'>
-                                    <th class='col-3'>姓名</th>
-                                    <th class='col-7'>功能</th>
+                                <tr>
+                                    <th>姓名</th>
+                                    <th>功能</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -91,9 +104,9 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                         <label>我提交的申請:</label>
                         <table class='table friendssend-table '>
                             <thead class='thead-light'>
-                                <tr class='d-flex'>
-                                    <th class='col-3'>姓名</th>
-                                    <th class='col-7'>狀態</th>
+                                <tr>
+                                    <th>姓名</th>
+                                    <th>狀態</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -142,7 +155,8 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
             alert('Copied!');
         });
         var arr22;
-        var infoshow = function() {
+
+        function infoshow() {
             $.ajax({
                 type: "POST",
                 url: 'compute.php?do=basicshow',
@@ -156,17 +170,17 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                         $('#fat').val('0');
                         $('#kg').val('0');
                     } else if (arr.basicinfo.msg == 'OK') {
-                        if ((arr.basicinfo.data[0].height) == 'null' || (arr.basicinfo.data[0].height) == 'undefined') {
+                        if ((arr.basicinfo.data[0].height) == null || (arr.basicinfo.data[0].height) == 'undefined') {
                             $('#height').val('0');
                         } else {
                             $('#height').val(`${arr.basicinfo.data[0].height}`);
                         }
-                        if ((arr.basicinfo.data[0].fat) == 'null' || (arr.basicinfo.data[0].fat) == 'undefined') {
+                        if ((arr.basicinfo.data[0].fat) == null || (arr.basicinfo.data[0].fat) == 'undefined') {
                             $('#fat').val('0');
                         } else {
                             $('#fat').val(`${arr.basicinfo.data[0].fat}`);
                         }
-                        if ((arr.basicinfo.data[0].kg) == 'null' || (arr.basicinfo.data[0].kg) == 'undefined') {
+                        if ((arr.basicinfo.data[0].kg) == null || (arr.basicinfo.data[0].kg) == 'undefined') {
                             $('#kg').val('0');
                         } else {
                             $('#kg').val(`${arr.basicinfo.data[0].kg}`);
@@ -181,26 +195,26 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                     if (arr.friendsend.msg == 'OK') {
                         var print = '';
                         for (i = 0; i < arr.friendsend.data.length; i++) {
-                            print += `<tr class="d-flex">
-                                        <td class='col-3'>${arr.friendsend.data[i].requestname}
+                            print += `<tr >
+                                        <td >${arr.friendsend.data[i].requestname}
                                             <input type="hidden" name="friendsid" value='${arr.friendsend.data[i].requestToid}'></td>
-                                        <td class='col-7'><span>等待同意中</span>
+                                        <td><span>等待同意中</span>
                                             <button class='btn btn-sm btn-danger'onclick='delfriendsend(${arr.friendsend.data[i].requestToid})'><span class="material-icons">delete</span></button></td>
                                     </tr>`;
                         }
                         $('.friendssend-table tbody').html(print);
                     } else {
-                        var print = `<tr class="d-flex"><td colspan="2" class="text-center col-10">無資料</td></tr>`;
+                        var print = `<tr ><td colspan="2" class="text-center ">無資料</td></tr>`;
                         $('.friendssend-table tbody').html(print);
                     }
                     // 他人提交的邀請
                     if (arr.find_friendsreq.msg == 'OK') {
                         var print = '';
                         for (i = 0; i < arr.find_friendsreq.data.length; i++) {
-                            print += `<tr class="d-flex">
-                                        <td class='col-3'>${arr.find_friendsreq.data[i].requestname}
+                            print += `<tr >
+                                        <td>${arr.find_friendsreq.data[i].requestname}
                                             <input type="hidden" name="friendsid" value='${arr.find_friendsreq.data[i].requestid}'></td>
-                                        <td class='col-7'>
+                                        <td>
                                             <button class='btn btn-sm btn-danger'onclick='agreequest(${arr.find_friendsreq.data[i].requestid})'><span class="material-icons">how_to_reg</span></button>
                                             <button class='btn btn-sm btn-danger'onclick='denyquest(${arr.find_friendsreq.data[i].requestid})'><span class="material-icons">clear</span></button>
                                         </td>
@@ -211,10 +225,27 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                         $('.badge').text(badge);
 
                     } else {
-                        var print = `<tr class='d-flex'><td colspan="2" class="text-center col-10">無資料</td></tr>`
+                        var print = `<tr ><td colspan="2" class="text-center ">無資料</td></tr>`
                         $('.friendsrequest-table tbody').html(print);
                     }
-
+                    // myfriends
+                    if (arr.myfirends.msg == 'OK' && arr.myfirends.data != null) {
+                        var print = '';
+                        for (i = 0; i < arr.myfirends.data.length; i++) {
+                            var count = i + 1;
+                            print += `<tr class='text-center'>
+                                        <td>${count}</td>
+                                        <td>
+                                            <input type="hidden" name="friendsid" value='${arr.myfirends.data[i].friendsid}'>${arr.myfirends.data[i].friendsname}</td>
+                                        <td>
+                                            <button class='btn btn-sm btn-danger'onclick='delmyfriends(${arr.myfirends.data[i].friendsid})'><span class="material-icons">delete</span></button></td>
+                                    </tr>`;
+                        }
+                        $('.myfriends-table tbody').html(print);
+                    } else {
+                        var print = `<tr><td colspan="3" class="text-center">無資料</td></tr>`;
+                        $('.myfriends-table tbody').html(print);
+                    }
                 }
             });
         }
@@ -278,7 +309,7 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                         var i = 0;
                         var print = '';
                         for (i; i < arr.data.length; i++) {
-                            print += `<tr><th>${arr.data[i].name}<input type="hidden" name="friendsid" value='${arr.data[i].id}'></th><th><button class='btn btn-sm btn-danger'onclick='sendrequest(this)'><span class="material-icons">send</span></button> \t <span></span></th></tr>`;
+                            print += `<tr><th>${arr.data[i].name}<input type="hidden" name="friendsid" value='${arr.data[i].id}'></th><th><button class='btn btn-sm btn-danger'onclick='sendrequest(this)'><span class="material-icons">send</span></button>&nbsp; &nbsp;<span class='txt'></span></th></tr>`;
                         }
                         $('.searchfriend-table tbody').html(print);
                         $('#forsearch').modal('show')
@@ -293,7 +324,6 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
         })
 
         function sendrequest(who) {
-            arr2 = who
             var requestid = $(who).parents('tr').find('input[name=friendsid]').val()
             $.ajax({
                 type: "POST",
@@ -304,11 +334,13 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                 success: function(re) {
                     var arr = JSON.parse(re);
                     if (arr['msg'] == 'OK') {
+                        $(who).parent().find('.txt').text('已發送申請')
                         $(who).attr('disabled', 'disabled');
                     } else if (arr['msg'] == 'requestfail') {
                         $(who).siblings('span').text(`Oops!`)
                     } else {
                         $(who).siblings('span').text(`${arr['txt']}`)
+                        $(who).parent().find('.txt').text('邀請已存在')
                         $(who).attr('disabled', 'disabled');
                     }
                 }
@@ -355,24 +387,48 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
         }
 
         function denyquest(who) {
-            var denyid = who;
-            $.ajax({
-                type: "POST",
-                url: 'compute.php?do=denyquest',
-                data: {
-                    denyid
-                },
-                success: function(re) {
-                    var arr = JSON.parse(re);
-                    if (arr['msg'] == 'OK') {
-                        $('.badge').text('');
-                        infoshow();
-                    } else if (arr['msg'] == 'err') {
-                        alert(`${arr['txt']}`)
+            var ans = confirm('確定要刪除嗎?');
+            if (ans) {
+                var denyid = who;
+                $.ajax({
+                    type: "POST",
+                    url: 'compute.php?do=denyquest',
+                    data: {
+                        denyid
+                    },
+                    success: function(re) {
+                        var arr = JSON.parse(re);
+                        if (arr['msg'] == 'OK') {
+                            $('.badge').text('');
+                            infoshow();
+                        } else if (arr['msg'] == 'err') {
+                            alert(`${arr['txt']}`)
+                        }
                     }
-                }
-            });
+                });
+            }
+        }
 
+        function delmyfriends(who) {
+            var ans = confirm('確定要刪除嗎?');
+            if (ans) {
+                var delid = who;
+                $.ajax({
+                    type: "POST",
+                    url: 'compute.php?do=delmyfriends',
+                    data: {
+                        delid
+                    },
+                    success: function(re) {
+                        var arr = JSON.parse(re);
+                        if (arr['msg'] == 'OK') {
+                            infoshow();
+                        } else if (arr['msg'] == 'err') {
+                            alert(`${arr['txt']}`)
+                        }
+                    }
+                });
+            }
         }
     </script>
 

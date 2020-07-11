@@ -15,9 +15,9 @@
       <li class="nav-item <?=($thispage=='health_create')?'active':''?>">
         <a class="nav-link" href="health_create.php">新增紀錄</a>
       </li>
-      <!-- <li class="nav-item">
-        <a class="nav-link" href="friends_group">好友群組</a>
-      </li> -->
+      <li class="nav-item <?=($thispage=='user_chart')?'active':''?>">
+        <a class="nav-link" href="user_chart.php">個人數據表</a>
+      </li>
       <li class="nav-item dropdown  <?=($thispage=='create_friendsgroup')?'active':''?>">
         <a class="nav-link dropdown-toggle" id="friendsgroup" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           好友群組

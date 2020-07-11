@@ -134,16 +134,16 @@ switch ($_GET['do']) {
             $kg = isset($_POST['kg']) ? $_POST['kg'] : 1;
             $fat = isset($_POST['fat']) ? $_POST['fat'] : 1;
             if (!$isexist) {
-                $db->query('INSERT INTO hwf_userinfo(id,updatedate) VALUES("' . $id . '",NOW())');
+                $db->query('INSERT INTO hwf_userinfo(id,updatetime) VALUES("' . $id . '",NOW())');
             }
             if (!empty($height)) {
-                $db->query('UPDATE hwf_userinfo SET height=' . $height . ',updatedate=NOW() WHERE id=' . $id);
+                $db->query('UPDATE hwf_userinfo SET height=' . $height . ',updatetime=NOW() WHERE id=' . $id);
             }
             if (!empty($kg)) {
-                $db->query('UPDATE hwf_userinfo SET kg=' . $kg . ',updatedate=NOW() WHERE id=' . $id);
+                $db->query('UPDATE hwf_userinfo SET kg=' . $kg . ',updatetime=NOW() WHERE id=' . $id);
             }
             if (!empty($fat)) {
-                $db->query('UPDATE hwf_userinfo SET fat=' . $fat . ',updatedate=NOW() WHERE id=' . $id);
+                $db->query('UPDATE hwf_userinfo SET fat=' . $fat . ',updatetime=NOW() WHERE id=' . $id);
             }
             $arr['msg'] = 'OK';
         } else {
@@ -210,7 +210,7 @@ switch ($_GET['do']) {
             $arr['txt'] = '代碼已存在';
         } else {
             if (!$chkuserinfo) {
-                $db->query('INSERT INTO hwf_userinfo(id,updatedate) VALUES("' . $_SESSION['user'] . '",NOW())');
+                $db->query('INSERT INTO hwf_userinfo(id,updatetime) VALUES("' . $_SESSION['user'] . '",NOW())');
             }
             $code = '';
             for ($i = 0; $i < 10; $i++) {
@@ -220,7 +220,7 @@ switch ($_GET['do']) {
                     $arr['FriendCode'] = $code;
                 }
             }
-            $rows1 = $db->query('UPDATE hwf_userinfo SET friend_code ="' . $code . '",updatedate=NOW() WHERE id=' . $_SESSION['user']);
+            $rows1 = $db->query('UPDATE hwf_userinfo SET friend_code ="' . $code . '",updatetime=NOW() WHERE id=' . $_SESSION['user']);
             if ($rows1) {
                 $arr['msg'] = 'OK';
             } else {
@@ -290,7 +290,7 @@ switch ($_GET['do']) {
         $chkuser_request = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         if (!empty($chkuser_request)) {
             $bothupdate = 1; //我也有加對方，修改我方request
-            $sql2 = 'UPDATE hwf_friends_request SET updatedate=NOW(),isauth="' . $authstatus . '" WHERE userid=' . $_SESSION['user'] . ' AND friendsid=' . $agreeid;
+            $sql2 = 'UPDATE hwf_friends_request SET updatetime=NOW(),isauth="' . $authstatus . '" WHERE userid=' . $_SESSION['user'] . ' AND friendsid=' . $agreeid;
             $user_result = ($db->query($sql2)) ? 1 : 0;
         } else {
             $bothupdate = 0; // 我沒有加對方，新增一個request isauth=Friends
@@ -298,14 +298,14 @@ switch ($_GET['do']) {
             $other_result = ($db->query($sql3)) ? 1 : 0;
         }
         // 只有對方的request
-        $sql4 = 'UPDATE hwf_friends_request SET updatedate=NOW(),isauth="' . $authstatus . '" WHERE userid=' . $agreeid . ' AND friendsid=' . $_SESSION['user'];
+        $sql4 = 'UPDATE hwf_friends_request SET updatetime=NOW(),isauth="' . $authstatus . '" WHERE userid=' . $agreeid . ' AND friendsid=' . $_SESSION['user'];
         $fsqlstatus = ($db->query($sql4)) ? 1 : 0;
         if ($bothupdate == 1) {
             if (($user_result == 1) && ($fsqlstatus == 1)) {
                 $arr['msg'] = 'OK';
             } else {
-                $db->query('UPDATE hwf_friends_request SET updatedate=NOW(),isauth="Pending" AND userid=' . $_SESSION['user'] . ' AND friendsid=' . $agreeid);
-                $db->query('UPDATE hwf_friends_request SET updatedate=NOW(),isauth="Pending" AND userid=' . $agreeid . ' AND friendsid=' . $_SESSION['user']);
+                $db->query('UPDATE hwf_friends_request SET updatetime=NOW(),isauth="Pending" AND userid=' . $_SESSION['user'] . ' AND friendsid=' . $agreeid);
+                $db->query('UPDATE hwf_friends_request SET updatetime=NOW(),isauth="Pending" AND userid=' . $agreeid . ' AND friendsid=' . $_SESSION['user']);
                 $arr['msg'] = 'err';
                 $arr['txt'] = '未知錯誤';
             }
@@ -314,7 +314,7 @@ switch ($_GET['do']) {
                 $arr['msg'] = 'OK';
             } else {
                 $db->query('DELETE FROM hwf_friends_request WHERE userid=' . $_SESSION['user'] . ' AND friendsid=' . $agreeid);
-                $db->query('UPDATE hwf_friends_request SET updatedate=NOW(),isauth="Pending" AND userid=' . $agreeid . ' AND friendsid=' . $_SESSION['user']);
+                $db->query('UPDATE hwf_friends_request SET updatetime=NOW(),isauth="Pending" AND userid=' . $agreeid . ' AND friendsid=' . $_SESSION['user']);
                 $arr['msg'] = 'err';
                 $arr['txt'] = '未知錯誤';
             }
@@ -359,7 +359,7 @@ switch ($_GET['do']) {
         if ($db->query($sql)) {
             $groupinfo = $db->query('SELECT id FROM hwf_groupinfo WHERE code="' . $code . '" AND ownerid=' . $_SESSION['user'])->fetchAll(PDO::FETCH_ASSOC);
             $groupid = $groupinfo[0]['id'];
-            $sql2 = 'INSERT INTO hwf_group VALUES(null,' . $groupid . ',' . $_SESSION['user'] . ',"Owner",NOW())';
+            $sql2 = 'INSERT INTO hwf_group VALUES(null,' . $groupid . ',' . $_SESSION['user'] . ',"Owner",NOW(),NOW())';
             if ($db->query($sql2)) {
                 $arr['msg'] = 'OK';
             } else {
@@ -374,7 +374,7 @@ switch ($_GET['do']) {
         echo json_encode($arr);
         break;
     case 'groupshow':
-        $mygroup = $db->query('SELECT hwf_group.groupid,hwf_groupinfo.name,hwf_groupinfo.ownerid,hwf_groupinfo.code,hwf_group.isauth FROM hwf_group JOIN hwf_groupinfo ON hwf_groupinfo.id=hwf_group.groupid WHERE isauth!="Pending" AND hwf_group.userid=' . $_SESSION['user'])->fetchAll(PDO::FETCH_ASSOC);
+        $mygroup = $db->query('SELECT hwf_group.groupid,hwf_groupinfo.name,hwf_groupinfo.ownerid,hwf_groupinfo.code,hwf_group.isauth FROM hwf_group JOIN hwf_groupinfo ON hwf_groupinfo.id=hwf_group.groupid WHERE isauth IN("Owner","Member") AND hwf_group.userid=' . $_SESSION['user'])->fetchAll(PDO::FETCH_ASSOC);
         $group = array();
         if (count($mygroup) > 0) {
             foreach ($mygroup as $key => $value) {
@@ -383,21 +383,24 @@ switch ($_GET['do']) {
                 $group[$key]['code'] = $value['code'];
                 $group[$key]['isowner'] = ($value['ownerid'] == $_SESSION['user']) ? 1 : 0;
                 if ($group[$key]['isowner'] == 1) {
-                    $count = $db->query('SELECT count(*) cnt FROM hwf_group JOIN hwf_groupinfo ON hwf_groupinfo.id=hwf_group.groupid WHERE isauth="Pending" AND ownerid=' . $_SESSION['user'])->fetchAll(PDO::FETCH_ASSOC);
-                    $group[$key]['PendingCount'] = $count[0]['cnt'];
+                    $countPending = $db->query('SELECT count(*) cnt FROM hwf_group JOIN hwf_groupinfo ON hwf_groupinfo.id=hwf_group.groupid WHERE isauth="Pending" AND ownerid=' . $_SESSION['user'] . ' AND groupid=' . $value['groupid'])->fetchAll(PDO::FETCH_ASSOC);
+                    $group[$key]['PendingCount'] = $countPending[0]['cnt'];
                 }
+                $countMember = $db->query('SELECT count(*) cnt FROM hwf_group JOIN hwf_groupinfo ON hwf_groupinfo.id=hwf_group.groupid WHERE isauth="Member" AND groupid=' . $value['groupid'])->fetchAll(PDO::FETCH_ASSOC);
+                $group[$key]['MemberCount'] = $countMember[0]['cnt'];
             }
             $arr['mygroup']['msg'] = 'OK';
             $arr['mygroup']['data'] = $group;
         } else {
             $arr['mygroup']['msg'] = 'nodata';
         }
-        $myrequestgroup = $db->query('SELECT hwf_group.groupid,hwf_groupinfo.name,hwf_groupinfo.ownerid,hwf_group.isauth,hwf_group.createtime FROM hwf_group JOIN hwf_groupinfo ON hwf_groupinfo.id=hwf_group.groupid WHERE isauth="Pending" AND hwf_group.userid=' . $_SESSION['user'])->fetchAll(PDO::FETCH_ASSOC);
+        $myrequestgroup = $db->query('SELECT hwf_group.groupid,hwf_groupinfo.name,hwf_groupinfo.ownerid,hwf_group.isauth,hwf_group.createtime,hwf_group.isauth FROM hwf_group JOIN hwf_groupinfo ON hwf_groupinfo.id=hwf_group.groupid WHERE isauth IN("Pending","Denied","Out") AND hwf_group.userid=' . $_SESSION['user'])->fetchAll(PDO::FETCH_ASSOC);
         $requestgroup = array();
         if (count($myrequestgroup) > 0) {
             foreach ($myrequestgroup as $key => $value) {
                 $requestgroup[$key]['groupid'] = $value['groupid'];
                 $requestgroup[$key]['name'] = $value['name'];
+                $requestgroup[$key]['status'] = $value['isauth'];
                 $requestgroup[$key]['time'] = $value['createtime'];
             }
             $arr['myrequestgroup']['msg'] = 'OK';
@@ -409,17 +412,24 @@ switch ($_GET['do']) {
         break;
     case 'searchgroup':
         $code = $_POST['code'];
-        $groupinfo = $db->query('SELECT hwf_user.name owner,hwf_groupinfo.ownerid,hwf_groupinfo.id,hwf_groupinfo.name FROM hwf_groupinfo JOIN hwf_user ON hwf_groupinfo.ownerid=hwf_user.id WHERE code="' . $code . '"')->fetchAll(PDO::FETCH_ASSOC);
-        if (!empty($groupinfo)) {
-            if ($groupinfo[0]['ownerid'] == $_SESSION['user']) {
-                $arr['msg'] = 'owner';
+        $chkisexist = $db->query('SELECT* FROM hwf_groupinfo JOIN hwf_group ON hwf_groupinfo.id=hwf_group.groupid WHERE code="' . $code . '" AND userid=' . $_SESSION['user'])->fetchAll(PDO::FETCH_ASSOC);
+        if (empty($chkisexist)) {
+            // groupinfo
+            $groupinfo = $db->query('SELECT hwf_user.name owner,hwf_groupinfo.ownerid,hwf_groupinfo.id,hwf_groupinfo.name FROM hwf_groupinfo JOIN hwf_user ON hwf_groupinfo.ownerid=hwf_user.id WHERE code="' . $code . '"')->fetchAll(PDO::FETCH_ASSOC);
+            if (!empty($groupinfo)) {
+                if ($groupinfo[0]['ownerid'] == $_SESSION['user']) {
+                    $arr['msg'] = 'owner';
+                } else {
+                    $arr['msg'] = 'OK';
+                    $arr['data'] = $groupinfo;
+                }
             } else {
-                $arr['msg'] = 'OK';
-                $arr['data'] = $groupinfo;
+                $arr['msg'] = 'err';
+                $arr['txt'] = '找不到該群組';
             }
         } else {
-            $arr['msg'] = 'err';
-            $arr['txt'] = '找不到該群組';
+            $arr['msg'] = 'isexist';
+            $arr['data'] = $chkisexist;
         }
         echo json_encode($arr);
         break;
@@ -429,7 +439,7 @@ switch ($_GET['do']) {
         // 確認是否有邀請OR已經是member
         $chksql = 'SELECT * FROM hwf_group WHERE groupid=' . $id . ' AND userid=' . $_SESSION['user'];
         $status = 'Pending';
-        $sql = 'INSERT INTO hwf_group VALUES(null,' . $id . ',' . $_SESSION['user'] . ',"' . $status . '",NOW())';
+        $sql = 'INSERT INTO hwf_group VALUES(null,' . $id . ',' . $_SESSION['user'] . ',"' . $status . '",NOW(),NOW())';
         $request = $db->query($sql);
         if ($request) {
             $arr['msg'] = 'OK';
@@ -451,20 +461,84 @@ switch ($_GET['do']) {
         break;
     case 'findgroup':
         $groupid = $_POST['groupid'];
-        $sql = 'SELECT hwf_group.userid,hwf_user.name,hwf_group.isauth FROM hwf_group JOIN hwf_user ON hwf_user.id=hwf_group.userid WHERE isauth="Pending" AND groupid=' . $groupid;
+        $sql = 'SELECT hwf_group.userid,hwf_user.name,hwf_group.isauth FROM hwf_group JOIN hwf_user ON hwf_user.id=hwf_group.userid WHERE groupid=' . $groupid;
         $groupinfo = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        $request = array();
+        $member = array();
         if (!empty($groupinfo)) {
+            foreach ($groupinfo as $value) {
+                if ($value['isauth'] == 'Pending') {
+                    $request[] = $value;
+                } elseif ($value['isauth'] == 'Member') {
+                    $member[] = $value;
+                }
+            }
             $arr['msg'] = 'OK';
-            $arr['data'] = $groupinfo;
+            $arr['request'] = $request;
+            $arr['member'] = $member;
         } else {
             $arr['msg'] = 'err';
-            $arr['txt'] = '查無資料';
+            $arr['txt'] = '參數錯誤';
         }
         echo json_encode($arr);
         break;
-    case '':
+    case 'GroupRequest':
+        // 管理群組的申請接受拒絕
+        $userid = $_POST['userid'];
+        $groupid = $_POST['groupid'];
+        $method_name = $_POST['method_name'];
+        // chk這個申請有沒有存在
+        $chkrequest = $db->query('SELECT * FROM hwf_group WHERE groupid=' . $groupid . ' AND userid=' . $userid)->fetchAll(PDO::FETCH_ASSOC);
+        if ($chkrequest) {
+            if ($chkrequest[0]['isauth'] == 'Pending') {
+                if ($method_name == 'succ') {
+                    $isauth = 'Member';
+                } else if ($method_name == 'denied') {
+                    $isauth = 'Denied';
+                } else {
+                    $arr['msg'] = 'err';
+                    $arr['txt'] = '參數錯誤';
+                }
+                $sql = 'UPDATE hwf_group SET updatetime=NOW(),isauth="' . $isauth . '" WHERE groupid=' . $groupid . ' AND userid=' . $userid;
+                if ($db->query($sql)) {
+                    $arr['msg'] = 'OK';
+                } else {
+                    $arr['msg'] = 'err';
+                    $arr['txt'] = '暫時性失敗';
+                }
+            } else {
+                $arr['msg'] = 'err';
+                $arr['txt'] = '該筆申請可能已通過或是申請者取消';
+            }
+        } else {
+            $arr['msg'] = 'err';
+            $arr['txt'] = '查無該資料';
+        }
+        echo json_encode($arr);
         break;
-    case '':
+    case 'outgroup':
+        $method_name = $_POST['method_name'];
+        $groupid = $_POST['groupid'];
+        $userid = ($method_name == 'managerout') ? $_POST['userid'] : $_SESSION['user'];
+        $chkisexist = $db->query('SELECT * FROM hwf_group WHERE isauth="Member" AND userid=' . $userid . ' AND groupid=' . $groupid)->fetchAll(PDO::FETCH_ASSOC);
+        if (!empty($chkisexist)) {
+            $sql = '';
+            if ($method_name == 'managerout') {
+                $sql = 'UPDATE hwf_group SET updatetime=NOW(),isauth="Out" WHERE userid=' . $userid . ' AND groupid=' . $groupid;
+            } elseif ($method_name == 'user') {
+                $sql = 'DELETE FROM hwf_group WHERE userid=' . $userid . ' AND groupid=' . $groupid;
+            }
+            if ($db->query($sql)) {
+                $arr['msg'] = 'OK';
+            } else {
+                $arr['msg'] = 'err';
+                $arr['txt'] = '錯誤';
+            }
+        } else {
+            $arr['msg'] = 'err';
+            $arr['txt'] = '查無該筆資料';
+        }
+        echo json_encode($arr);
         break;
     case '':
         break;

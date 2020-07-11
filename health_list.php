@@ -25,7 +25,7 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
         }
 
         .addbutton {
-            position: absolute;
+            position: fixed;
             bottom: 10px;
             right: 10px;
             -webkit-transition: 0.5s;
@@ -159,8 +159,8 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                             print += `
                             <tr>
                                 <td>
-                                    <button class='btn btn-sm btn-warning text-light' onclick='update()'><span class="material-icons">create</span></button>
-                                    <button class='btn btn-sm btn-danger text-light' onclick='del(this)'><span class="material-icons">delete</span></button>
+                                    <button class='btn btn-sm btn-warning text-light' onclick="update()"><span class="material-icons">create</span></button>
+                                    <button class='btn btn-sm btn-danger text-light' onclick="dellist(this)"><span class="material-icons">delete</span></button>
                                     <input type="hidden" name="datasetid" value='${newre[i].id}'>
                                 </td>
                                 <td>${newre[i].date} ${(newre[i].ampm=='morning')?'早上':'下午'}</td>
@@ -210,8 +210,9 @@ if (!isset($_SESSION['user'])) header('Location:login.php');
                     }
                 }
             });
+        }
 
-            function del(who) {
+            function dellist(who) {
                 var id = $(who).parent().find('input[name=datasetid]').val();
                 var chkdel = confirm("確定刪除?");
                 var this_tr = $(who).parents('tr');
